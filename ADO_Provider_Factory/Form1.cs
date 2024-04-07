@@ -95,7 +95,7 @@ namespace ADO_Provider_Factory
         private void dataGridView1_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
             var sign = (sender as DataGridView).CurrentRow.Cells[2].Value as string;
-            if(sign.Contains("Data"))
+            if(sign!=null && sign.Contains("Data"))
             {
                 fact = DbProviderFactories.GetFactory(sign);
                 conn = fact.CreateConnection();
@@ -111,7 +111,8 @@ namespace ADO_Provider_Factory
             dataSet.Tables.Add(DataViewManagerDT);
             dataSet.Tables[0].TableName = "Persons";
             DataViewManager dvm = new DataViewManager(dataSet);
-            dvm.DataViewSettings["Persons"].RowFilter = "ID < 3";
+          //  dvm.DataViewSettings["Persons"].RowFilter = "ID < 3";
+            dvm.DataViewSettings["Persons"].Sort = "age ASC";
             DataView dw = dvm.CreateDataView(dataSet.Tables["Persons"]);
             dataGridView1.DataSource = null;
             dataGridView1.DataSource = dw;
