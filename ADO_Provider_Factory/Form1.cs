@@ -10,9 +10,13 @@ namespace ADO_Provider_Factory
     {
         DbConnection conn = null;
         DbProviderFactory fact = null;
+        DataTable DataViewManagerDT = null;
+        string providerName = string.Empty;
         public Form1()
         {
             InitializeComponent();
+            button2.Enabled = false;
+            dataGridView1.AllowUserToAddRows = false;
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -55,14 +59,62 @@ namespace ADO_Provider_Factory
         /// <param name="sender"></param name>
         private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
-            {
-                fact = DbProviderFactories.GetFactory(comboBox1.
-                SelectedItem.ToString());
+            
+                fact = DbProviderFactories.GetFactory(comboBox1.SelectedItem.ToString());
                 conn = fact.CreateConnection();
-                providerName =
-                GetConnectionStringByProvider(comboBox1.
-                SelectedItem.ToString());
+                providerName = GetConnectionStringByProvider(comboBox1.SelectedItem.ToString());
                 textBox1.Text = providerName;
+
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            conn.ConnectionString = textBox1.Text;
+            DbDataAdapter adapter = fact.CreateDataAdapter();
+            adapter.SelectCommand = conn.CreateCommand();
+            adapter.SelectCommand.CommandText = textBox2.Text;
+            DataTable dt = new DataTable();
+            adapter.Fill(dt);
+            dataGridView1.DataSource = null;
+            dataGridView1.DataSource = dt;
+            DataViewManagerDT = dt;
+           
+
+        }
+
+        private void textBox2_TextChanged(object sender, EventArgs e)
+        {
+            if (textBox2.Text.Length > 6)
+            {
+                button2.Enabled = true;
+            }
+            else
+                button2.Enabled = false;
+        }
+
+        private void dataGridView1_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
+        {
+            var sign = (sender as DataGridView).CurrentRow.Cells[2].Value as string;
+            if(sign.Contains("Data"))
+            {
+                fact = DbProviderFactories.GetFactory(sign);
+                conn = fact.CreateConnection();
+                providerName = GetConnectionStringByProvider(sign);
+                textBox1.Text = providerName;
+                textBox2.Text = "SELECT * FROM Persons";
+            }
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            DataSet dataSet = new DataSet();
+            dataSet.Tables.Add(DataViewManagerDT);
+            dataSet.Tables[0].TableName = "Persons";
+            DataViewManager dvm = new DataViewManager(dataSet);
+            dvm.DataViewSettings["Persons"].RowFilter = "ID < 3";
+            DataView dw = dvm.CreateDataView(dataSet.Tables["Persons"]);
+            dataGridView1.DataSource = null;
+            dataGridView1.DataSource = dw;
         }
     }
 }
